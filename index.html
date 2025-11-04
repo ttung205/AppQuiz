@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz Học Tập</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1 class="main-title">Quiz WEB</h1>
+    <div id="main-menu" class="menu">
+      <button class="menu-btn" data-part="all">Tất Cả</button>
+      <button class="menu-btn" data-part="1">Phần 1 (Câu 1-33)</button>
+      <button class="menu-btn" data-part="2">Phần 2 (Câu 34-66)</button>
+      <button class="menu-btn" data-part="3">Phần 3 (Câu 67-100)</button>
+    </div>
+    <div id="quiz-view" class="quiz-view hidden">
+      <div class="quiz-header">
+        <span id="quiz-part"></span>
+        <span id="quiz-progress"></span>
+      </div>
+      <div id="question-content"></div>
+      <ul id="options-list"></ul>
+      <div class="quiz-nav">
+        <button id="prev-btn" class="nav-btn">Câu Trước</button>
+        <button id="next-btn" class="nav-btn">Câu Tiếp Theo</button>
+      </div>
+      <div class="quiz-actions">
+        <button id="restart-btn" class="nav-btn">Bắt đầu lại</button>
+        <button id="quiz-back-btn" class="back-btn">Quay lại màn hình chính</button>
+      </div>
+    </div>
+    <div id="result-view" class="result-view hidden">
+      <h2>Kết Quả</h2>
+      <div id="result-summary"></div>
+      <button id="back-btn" class="back-btn">Quay lại màn hình chính</button>
+    </div>
+  </div>
+  <script src="ATTT.js"></script>
+</body>
+</html>
