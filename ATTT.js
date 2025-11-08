@@ -824,9 +824,9 @@ const questionsData = [
       "Sử dụng tường lửa mạnh",
       "Dùng mã hóa SSL",
       "Sử dụng phần mềm chống virus",
-      "Sử dụng bộ lọc nội dung",
+      "Sử dụng bộ lọc nội dung",a
     ],
-    correct: 3,
+    correct: 0,
   },
   {
     question:
