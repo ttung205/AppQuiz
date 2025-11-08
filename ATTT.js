@@ -712,7 +712,7 @@ const questionsData = [
       "Sử dụng tường lửa",
       "Cả A và B",
     ],
-    correct: 3,
+    correct: 0,
   },
   {
     question: "Điều nào là chính sách bảo mật hợp lý trong tổ chức?",
@@ -824,7 +824,7 @@ const questionsData = [
       "Sử dụng tường lửa mạnh",
       "Dùng mã hóa SSL",
       "Sử dụng phần mềm chống virus",
-      "Sử dụng bộ lọc nội dung",a
+      "Sử dụng bộ lọc nội dung",
     ],
     correct: 0,
   },
