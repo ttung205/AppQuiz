@@ -530,7 +530,7 @@ const questionsData = [
       "Dễ dàng bị bẻ khóa",
       "Không thể sinh ngược từ giá trị băm",
     ],
-    correct: 1,
+    correct: 3,
   },
   {
     question: "Hàm băm nào dưới đây được xem là an toàn nhất hiện nay?",
@@ -1510,7 +1510,7 @@ const questionsData = [
     "Dễ dàng bị bẻ khóa",
     "Không thể sinh ngược từ giá trị băm",
   ],
-  correct: 1,
+  correct: 3,
 },
 {
   question: "Hàm băm nào dưới đây được xem là an toàn nhất hiện nay?",
