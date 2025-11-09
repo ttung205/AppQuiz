@@ -1590,7 +1590,7 @@ const questionsData = [
     "Quyền lợi của tổ chức",
     "Quy định của cơ quan nhà nước",
   ],
-  correct: 3,
+  correct: 1,
 },
 {
   question: "Việc bảo vệ thông tin cá nhân trong không gian mạng có ý nghĩa gì?",
