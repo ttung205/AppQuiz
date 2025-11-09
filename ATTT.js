@@ -1460,7 +1460,7 @@ const questionsData = [
     "Xác thực chữ ký số",
     "Chuyển đổi giữa các thuật toán",
   ],
-  correct: 2,
+  correct: 1,
 },
 {
   question: "Quá trình tạo ra khóa công khai trong RSA dựa trên điều gì?",
