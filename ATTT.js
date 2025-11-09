@@ -1692,7 +1692,7 @@ const questionsData = [
 {
   question: "Chữ ký số sử dụng gì để xác nhận tính hợp lệ của thông điệp?",
   options: ["Khóa công khai", "Khóa riêng", "Chứng thư số", "Tất cả các câu trên"],
-  correct: 3,
+  correct: 0,
 },
 {
   question: "Mã hóa DES không còn được sử dụng rộng rãi vì lý do gì?",
