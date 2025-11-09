@@ -398,7 +398,7 @@ const questionsData = [
   {
     question: "Trong mã hóa Caesar, khóa có thể có giá trị nào?",
     options: ["Từ 1 đến 25", "Từ 0 đến 25", "Từ 0 đến 26", "Từ 1 đến 26"],
-    correct: 1,
+    correct: 0,
   },
   {
     question:
