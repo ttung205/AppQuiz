@@ -366,6 +366,7 @@ const questionsData = [
     correct: 0,
   },
   {
+
     question:
       "Khi sử dụng mã hóa Vigenère, chuỗi khóa dài hơn thông điệp, điều này có tác dụng gì?",
     options: [
@@ -495,7 +496,7 @@ const questionsData = [
       "Dễ dàng bị bẻ khóa",
       "Không thể sinh ngược từ giá trị băm",
     ],
-    correct: 1,
+    correct: 3,
   },
   {
     question: "Hàm băm nào dưới đây được xem là an toàn nhất hiện nay?",
@@ -1393,7 +1394,7 @@ const questionsData = [
     "Dễ dàng bị bẻ khóa",
     "Không thể sinh ngược từ giá trị băm",
   ],
-  correct: 1,
+  correct: 3,
 },
 {
   question: "Hàm băm nào dưới đây được xem là an toàn nhất hiện nay?",
@@ -1445,6 +1446,7 @@ const questionsData = [
   ],
   correct: 1,
 },
+
 {
   question: "Để đảm bảo bảo mật thông tin trong môi trường làm việc, doanh nghiệp nên làm gì?",
   options: [
