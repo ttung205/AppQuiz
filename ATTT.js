@@ -104,16 +104,6 @@ const questionsData = [
     correct: 2,
   },
   {
-    question: "DES là viết tắt của:",
-    options: [
-      "Digital Encryption Standard",
-      "Data Encryption Standard",
-      "Dynamic Encryption Scheme",
-      "Dual Encryption Service",
-    ],
-    correct: 1,
-  },
-  {
     question: "DES sử dụng độ dài khóa:",
     options: ["56-bit", "64-bit", "128-bit", "192-bit"],
     correct: 0,
@@ -337,12 +327,12 @@ const questionsData = [
   {
     question: "Mã hóa văn bản trước khi ký số có cần thiết không?",
     options: ["Có", "Không", "Tùy hệ thống", "Không bao giờ"],
-    correct: 1,
+    correct: 2,
   },
   {
     question: "Hàm băm có đảm bảo tính bảo mật không?",
     options: ["Có", "Không", "Một phần", "Tùy độ dài"],
-    correct: 1,
+    correct: 2,
   },
   {
     question: "Digital Signature Algorithm (DSA) là:",
@@ -376,31 +366,7 @@ const questionsData = [
     correct: 0,
   },
   {
-    question: "Mã hóa Affine là một dạng mã hóa nào?",
-    options: [
-      "Mã hóa thay thế",
-      "Mã hóa đối xứng",
-      "Mã hóa không đối xứng",
-      "Mã hóa Vigenere",
-    ],
-    correct: 0,
-  },
-  {
-    question: "Kỹ thuật nào sau đây dùng trong mã hóa Vigenère?",
-    options: [
-      "Sử dụng một bảng chữ cái để thay thế",
-      "Sử dụng các khóa tuần hoàn",
-      "Sử dụng phép toán số học để thay thế",
-      "Sử dụng phép toán ma trận",
-    ],
-    correct: 1,
-  },
-  {
-    question: "Trong mã hóa Caesar, khóa có thể có giá trị nào?",
-    options: ["Từ 1 đến 25", "Từ 0 đến 25", "Từ 0 đến 26", "Từ 1 đến 26"],
-    correct: 0,
-  },
-  {
+
     question:
       "Khi sử dụng mã hóa Vigenère, chuỗi khóa dài hơn thông điệp, điều này có tác dụng gì?",
     options: [
@@ -544,16 +510,6 @@ const questionsData = [
       "Một phương pháp xác thực danh tính người gửi",
       "Mã hóa thông tin tài chính",
       "Đảm bảo độ bảo mật của dữ liệu",
-    ],
-    correct: 1,
-  },
-  {
-    question: "Mục đích của chữ ký số là gì?",
-    options: [
-      "Bảo vệ quyền riêng tư của thông điệp",
-      "Đảm bảo tính toàn vẹn và xác thực thông điệp",
-      "Mã hóa dữ liệu",
-      "Chống lại các cuộc tấn công mạng",
     ],
     correct: 1,
   },
@@ -777,16 +733,6 @@ const questionsData = [
     correct: 3,
   },
   {
-    question: "Các cuộc tấn công kiểu 'phishing' thường lợi dụng yếu tố nào?",
-    options: [
-      "Lỗi trong mã hóa",
-      "Lỗi người sử dụng",
-      "Lỗ hổng phần mềm",
-      "Tấn công từ xa",
-    ],
-    correct: 1,
-  },
-  {
     question: "Mã hóa trong giao tiếp qua mạng giúp gì?",
     options: [
       "Giảm chi phí bảo mật",
@@ -827,17 +773,6 @@ const questionsData = [
       "Sử dụng bộ lọc nội dung",
     ],
     correct: 0,
-  },
-  {
-    question:
-      "Phương pháp nào dưới đây không liên quan đến việc bảo vệ dữ liệu cá nhân?",
-    options: [
-      "Mã hóa dữ liệu",
-      "Xác thực người dùng mạnh",
-      "Đảm bảo sao lưu thường xuyên",
-      "Chia sẻ thông tin cá nhân qua email",
-    ],
-    correct: 3,
   },
   {
   question: "Mã Caesar là loại mã hóa nào?",
@@ -966,16 +901,6 @@ const questionsData = [
     "128",
     "192",
     "256",
-  ],
-  correct: 1,
-},
-{
-  question: "AES có thể sử dụng khóa có kích thước nào?",
-  options: [
-    "64 bit, 128 bit, 192 bit",
-    "128 bit, 192 bit, 256 bit",
-    "256 bit, 512 bit, 1024 bit",
-    "128 bit, 256 bit, 512 bit",
   ],
   correct: 1,
 },
@@ -1377,17 +1302,6 @@ const questionsData = [
   correct: 0,
 },
 {
-  question:
-    "Khi sử dụng mã hóa Vigenère, chuỗi khóa dài hơn thông điệp, điều này có tác dụng gì?",
-  options: [
-    "Tăng độ bảo mật của mã hóa",
-    "Giảm độ bảo mật của mã hóa",
-    "Không ảnh hưởng đến độ bảo mật",
-    "Làm mã hóa trở nên khó giải mã",
-  ],
-  correct: 0,
-},
-{
   question: "Thuật toán mã hóa DES là loại mã hóa gì?",
   options: [
     "Mã hóa không đối xứng",
@@ -1418,16 +1332,6 @@ const questionsData = [
   correct: 0,
 },
 {
-  question: "Kích thước của khóa trong AES có thể là bao nhiêu?",
-  options: [
-    "128 bit, 192 bit, 256 bit",
-    "64 bit, 128 bit, 256 bit",
-    "128 bit, 256 bit",
-    "256 bit, 512 bit",
-  ],
-  correct: 0,
-},
-{
   question: "Thuật toán mã hóa AES sử dụng bao nhiêu vòng lặp trong quá trình mã hóa?",
   options: ["10 vòng", "12 vòng", "14 vòng", "16 vòng"],
   correct: 0,
@@ -1453,16 +1357,6 @@ const questionsData = [
   correct: 0,
 },
 {
-  question: "Khóa riêng trong RSA được dùng để làm gì?",
-  options: [
-    "Mã hóa thông điệp",
-    "Giải mã thông điệp",
-    "Xác thực chữ ký số",
-    "Chuyển đổi giữa các thuật toán",
-  ],
-  correct: 1,
-},
-{
   question: "Quá trình tạo ra khóa công khai trong RSA dựa trên điều gì?",
   options: [
     "Số nguyên tố",
@@ -1481,16 +1375,6 @@ const questionsData = [
     "Thuật toán AES",
   ],
   correct: 0,
-},
-{
-  question: "MD5 là thuật toán hàm băm nào?",
-  options: [
-    "Mã hóa đối xứng",
-    "Mã hóa công khai",
-    "Hàm băm",
-    "Thuật toán mã hóa",
-  ],
-  correct: 2,
 },
 {
   question: "MD5 tạo ra một giá trị băm có độ dài bao nhiêu bit?",
@@ -1518,16 +1402,6 @@ const questionsData = [
   correct: 3,
 },
 {
-  question: "Chữ ký số là gì?",
-  options: [
-    "Một phương pháp mã hóa thông điệp",
-    "Một phương pháp xác thực danh tính người gửi",
-    "Mã hóa thông tin tài chính",
-    "Đảm bảo độ bảo mật của dữ liệu",
-  ],
-  correct: 1,
-},
-{
   question: "Mục đích của chữ ký số là gì?",
   options: [
     "Bảo vệ quyền riêng tư của thông điệp",
@@ -1548,28 +1422,8 @@ const questionsData = [
   correct: 1,
 },
 {
-  question: "Mã hóa công khai giúp giải quyết vấn đề nào?",
-  options: [
-    "Bảo mật thông điệp",
-    "Xác thực danh tính",
-    "Cả A và B",
-    "Không có tác dụng gì",
-  ],
-  correct: 2,
-},
-{
   question: "Trong quá trình tạo chữ ký số, ai tạo ra khóa riêng?",
   options: ["Người gửi", "Người nhận", "Cả người gửi và người nhận", "Tổ chức chứng thực"],
-  correct: 0,
-},
-{
-  question: "Điều nào dưới đây không phải là hành vi vi phạm đạo đức trong an toàn thông tin?",
-  options: [
-    "Sử dụng mật khẩu mạnh",
-    "Xâm nhập vào hệ thống mà không có sự cho phép",
-    "Đảm bảo tính toàn vẹn của thông tin",
-    "Tiết lộ thông tin cá nhân mà không có sự đồng ý",
-  ],
   correct: 0,
 },
 {
@@ -1592,16 +1446,7 @@ const questionsData = [
   ],
   correct: 1,
 },
-{
-  question: "Việc bảo vệ thông tin cá nhân trong không gian mạng có ý nghĩa gì?",
-  options: [
-    "Đảm bảo an ninh quốc gia",
-    "Bảo vệ quyền lợi cá nhân",
-    "Cả A và B",
-    "Không quan trọng",
-  ],
-  correct: 2,
-},
+
 {
   question: "Để đảm bảo bảo mật thông tin trong môi trường làm việc, doanh nghiệp nên làm gì?",
   options: [
@@ -1670,37 +1515,12 @@ const questionsData = [
   correct: 0,
 },
 {
-  question: "Phương thức nào dưới đây giúp bảo vệ thông tin khi truyền qua mạng?",
-  options: [
-    "Mã hóa SSL/TLS",
-    "Đảm bảo mật khẩu mạnh",
-    "Sử dụng tường lửa",
-    "Cả A và B",
-  ],
-  correct: 0,
-},
-{
   question: "Điều nào là chính sách bảo mật hợp lý trong tổ chức?",
   options: [
     "Quản lý quyền truy cập thông tin rõ ràng",
     "Cung cấp quyền truy cập không giới hạn",
     "Không cần xác thực danh tính",
     "Phớt lờ cập nhật phần mềm bảo mật",
-  ],
-  correct: 0,
-},
-{
-  question: "Chữ ký số sử dụng gì để xác nhận tính hợp lệ của thông điệp?",
-  options: ["Khóa công khai", "Khóa riêng", "Chứng thư số", "Tất cả các câu trên"],
-  correct: 0,
-},
-{
-  question: "Mã hóa DES không còn được sử dụng rộng rãi vì lý do gì?",
-  options: [
-    "Chìa khóa quá ngắn (56 bit)",
-    "Không thể mã hóa các dữ liệu lớn",
-    "Quá chậm khi mã hóa",
-    "Độ bảo mật rất cao",
   ],
   correct: 0,
 },
@@ -1766,16 +1586,6 @@ const questionsData = [
     "Đưa ra mật khẩu mặc định cho tất cả nhân viên",
     "Không cần đào tạo nhân viên về bảo mật",
     "Không cần áp dụng phần mềm bảo mật",
-  ],
-  correct: 0,
-},
-{
-  question: "Cách thức nào dưới đây có thể giúp ngăn chặn các cuộc tấn công DDoS?",
-  options: [
-    "Sử dụng tường lửa mạnh",
-    "Dùng mã hóa SSL",
-    "Sử dụng phần mềm chống virus",
-    "Sử dụng bộ lọc nội dung",
   ],
   correct: 0,
 },
