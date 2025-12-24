@@ -496,7 +496,7 @@ const questionsData = [
       "Dễ dàng bị bẻ khóa",
       "Không thể sinh ngược từ giá trị băm",
     ],
-    correct: 3,
+    correct: 1,
   },
   {
     question: "Hàm băm nào dưới đây được xem là an toàn nhất hiện nay?",
@@ -1344,7 +1344,7 @@ const questionsData = [
     "Mã hóa thay thế",
     "Mã hóa không đối xứng",
   ],
-  correct: 1,
+  correct: 3,
 },
 {
   question: "RSA sử dụng hai khóa nào?",
@@ -1394,7 +1394,7 @@ const questionsData = [
     "Dễ dàng bị bẻ khóa",
     "Không thể sinh ngược từ giá trị băm",
   ],
-  correct: 3,
+  correct: 1,
 },
 {
   question: "Hàm băm nào dưới đây được xem là an toàn nhất hiện nay?",
