@@ -2559,6 +2559,7 @@ const quizView = document.getElementById("quiz-view");
 const resultView = document.getElementById("result-view");
 const questionContent = document.getElementById("question-content");
 const optionsList = document.getElementById("options-list");
+const answerFeedback = document.getElementById("answer-feedback");
 const prevBtn = document.getElementById("prev-btn");
 const nextBtn = document.getElementById("next-btn");
 const quizPart = document.getElementById("quiz-part");
@@ -2603,6 +2604,10 @@ function startQuiz(part) {
   mainMenu.classList.add("hidden");
   resultView.classList.add("hidden");
   quizView.classList.remove("hidden");
+    if (answerFeedback) {
+        answerFeedback.textContent = "";
+        answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
+    }
   // Nếu không có câu hỏi thì báo luôn
   if (quizQuestions.length === 0) {
     questionContent.textContent = "Chưa có câu hỏi cho phần này.";
@@ -2627,26 +2632,64 @@ function shuffleArray(array) {
 
 // Hàm random options và cập nhật answer đúng
 function shuffleQuestionOptions(question) {
-  const optionObjs = question.options.map((opt, idx) => ({ opt, idx }));
-  shuffleArray(optionObjs);
-  const newOptions = optionObjs.map((o) => o.opt);
+    const optionObjs = question.options.map((opt, idx) => ({ opt, idx }));
+    shuffleArray(optionObjs);
+    const newOptions = optionObjs.map((o) => o.opt);
 
-  // Xử lý cả single và multiple answers
-  let newAnswer;
-  if (Array.isArray(question.correct)) {
-    newAnswer = question.correct.map((correctIdx) =>
-      optionObjs.findIndex((o) => o.idx === correctIdx)
-    );
-  } else {
-    newAnswer = optionObjs.findIndex((o) => o.idx === question.correct);
-  }
+    // Xác định index đáp án đúng trong thứ tự gốc
+    let correctIndices = [];
 
-  return {
-    ...question,
-    options: newOptions,
-    answer: newAnswer,
-    isMultiple: Array.isArray(question.correct),
-  };
+    if (Array.isArray(question.correct)) {
+        // Trường hợp dữ liệu có sẵn mảng index đúng
+        correctIndices = question.correct.slice();
+    } else if (typeof question.correct === "number") {
+        correctIndices = [question.correct];
+    } else if (Array.isArray(question.answer)) {
+        // Trường hợp answer là mảng (nhiều đáp án) theo index hoặc chuỗi
+        correctIndices = question.answer
+            .map((ans) => {
+                if (typeof ans === "number") return ans;
+                if (typeof ans === "string") {
+                    return question.options.findIndex((opt) => opt === ans);
+                }
+                return -1;
+            })
+            .filter((idx) => idx >= 0);
+    } else {
+        // Trường hợp phổ biến hiện tại: answer là CHUỖI nội dung đáp án đúng
+        if (typeof question.answer === "number") {
+            correctIndices = [question.answer];
+        } else if (typeof question.answer === "string") {
+            const idx = question.options.findIndex((opt) => opt === question.answer);
+            if (idx >= 0) correctIndices = [idx];
+        }
+    }
+
+    // Map các index đúng cũ sang vị trí mới sau khi shuffle
+    let newAnswer;
+    if (correctIndices.length > 1) {
+        newAnswer = correctIndices
+            .map((originalIdx) =>
+                optionObjs.findIndex((o) => o.idx === originalIdx)
+            )
+            .filter((idx) => idx >= 0);
+    } else if (correctIndices.length === 1) {
+        newAnswer = optionObjs.findIndex(
+            (o) => o.idx === correctIndices[0]
+        );
+    } else {
+        // Không tìm được đáp án đúng, gán -1 để tránh crash
+        newAnswer = -1;
+    }
+
+    const isMultiple = correctIndices.length > 1;
+
+    return {
+        ...question,
+        options: newOptions,
+        answer: newAnswer,
+        isMultiple,
+    };
 }
 
 // =====================
@@ -2667,6 +2710,71 @@ function renderQuiz() {
   quizProgress.textContent = `Câu ${currentIndex + 1} / ${
     quizQuestions.length
   }`;
+
+    // Thiết lập/hiển thị feedback nếu câu hỏi đã được trả lời
+    if (answerFeedback) {
+        answerFeedback.textContent = "";
+        answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
+
+        if (userAnswers[currentIndex] !== null) {
+            const userAnswer = userAnswers[currentIndex];
+            let isCorrect = false;
+
+            if (q.isMultiple) {
+                if (
+                    Array.isArray(userAnswer) &&
+                    userAnswer.length > 0 &&
+                    Array.isArray(q.answer)
+                ) {
+                    const sortedUser = [...userAnswer].sort();
+                    const sortedCorrect = [...q.answer].sort();
+                    if (
+                        sortedUser.length === sortedCorrect.length &&
+                        sortedUser.every((val, i) => val === sortedCorrect[i])
+                    ) {
+                        isCorrect = true;
+                    }
+                }
+            } else {
+                if (userAnswer === q.answer) {
+                    isCorrect = true;
+                }
+            }
+
+            const correctIndices = Array.isArray(q.answer)
+                ? q.answer
+                : [q.answer];
+            const correctTexts = correctIndices
+                .map((idx) => q.options[idx])
+                .join("; ");
+
+            if (isCorrect) {
+                answerFeedback.textContent = `Bạn trả lời đúng. Đáp án đúng: ${correctTexts}.`;
+                answerFeedback.classList.add("correct-feedback");
+            } else {
+                let chosenText = "";
+                if (q.isMultiple) {
+                    if (Array.isArray(userAnswer) && userAnswer.length > 0) {
+                        chosenText = userAnswer.map((idx) => q.options[idx]).join("; ");
+                    }
+                } else if (
+                    userAnswer !== null &&
+                    typeof userAnswer === "number" &&
+                    userAnswer >= 0 &&
+                    userAnswer < q.options.length
+                ) {
+                    chosenText = q.options[userAnswer];
+                }
+
+                if (chosenText) {
+                    answerFeedback.textContent = `Bạn trả lời sai. Bạn chọn: ${chosenText}. Đáp án đúng: ${correctTexts}.`;
+                } else {
+                    answerFeedback.textContent = `Bạn trả lời sai. Đáp án đúng: ${correctTexts}.`;
+                }
+                answerFeedback.classList.add("incorrect-feedback");
+            }
+        }
+    }
 
   // Hiển thị câu hỏi với ghi chú về multiple choice
   if (q.isMultiple) {
@@ -2923,6 +3031,10 @@ if (backToMenuBtn) {
     quizProgress.textContent = "";
     prevBtn.disabled = true;
     nextBtn.disabled = true;
+        if (answerFeedback) {
+            answerFeedback.textContent = "";
+            answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
+        }
   });
 }
 
@@ -2947,6 +3059,10 @@ if (restartBtn) {
     currentIndex = 0;
     userAnswers = Array(quizQuestions.length).fill(null);
     isAnswered = false;
+        if (answerFeedback) {
+            answerFeedback.textContent = "";
+            answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
+        }
     // Hiển thị lại quiz từ đầu
     renderQuiz();
   });
