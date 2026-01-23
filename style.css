@@ -285,6 +285,21 @@ body::before {
   filter: none;
 }
 
+.answer-feedback {
+  margin-top: 4px;
+  min-height: 24px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.answer-feedback.correct-feedback {
+  color: var(--success);
+}
+
+.answer-feedback.incorrect-feedback {
+  color: var(--danger);
+}
+
 .quiz-nav {
   display: flex;
   justify-content: center;
