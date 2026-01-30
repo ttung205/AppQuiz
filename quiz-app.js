@@ -119,6 +119,7 @@ function startQuiz(part) {
     questionsData.slice(100, 150), // Phần 3: Câu 101-150
     questionsData.slice(150, 200), // Phần 4: Câu 151-200
     questionsData.slice(200, 250), // Phần 5: Câu 201-250
+    questionsData.slice(250, 300), // Phần 6: Câu 251-300
   ];
 
   let selectedQuestions;
