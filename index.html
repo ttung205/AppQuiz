@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,10 +8,11 @@
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
   <div class="container">
     <h1 class="main-title">Quiz Học Tập</h1>
-    
+
     <!-- MENU CHỌN MÔN HỌC -->
     <div id="subject-menu" class="subject-menu">
       <h2 class="subtitle">Chọn môn học để bắt đầu kiểm tra</h2>
@@ -50,13 +52,7 @@
     <div id="main-menu" class="menu hidden">
       <button id="back-to-subject" class="back-btn">← Quay lại</button>
       <h2 class="subtitle" id="current-subject-title"></h2>
-      <button class="menu-btn" data-part="all">Tất Cả</button>
-      <button class="menu-btn" data-part="1">Phần 1 (Câu 1-50)</button>
-      <button class="menu-btn" data-part="2">Phần 2 (Câu 51-100)</button>
-      <button class="menu-btn" data-part="3">Phần 3 (Câu 101-150)</button>
-      <button class="menu-btn" data-part="4">Phần 4 (Câu 151-200)</button>
-      <button class="menu-btn" data-part="5">Phần 5 (Câu 201-250)</button>
-      <button class="menu-btn" data-part="6">Phần 6 (Câu 251-300)</button>
+      <!-- Nút phần sẽ được tạo động theo số lượng câu hỏi của môn -->
     </div>
 
     <!-- QUIZ VIEW -->
@@ -93,28 +89,29 @@
     // Biến tạm để lưu data từ các file
     var questionsData;
   </script>
-  
+
   <script src="DTDM.js"></script>
   <script>if (questionsData) { allSubjectsData.DTDM = [...questionsData]; }</script>
-  
+
   <script src="ATTT.js"></script>
   <script>if (questionsData) { allSubjectsData.ATTT = [...questionsData]; }</script>
-  
+
   <script src="KTPM.js"></script>
   <script>if (questionsData) { allSubjectsData.KTPM = [...questionsData]; }</script>
-  
+
   <script src="PLDC.js"></script>
   <script>if (questionsData) { allSubjectsData.PLDC = [...questionsData]; }</script>
-  
+
   <script src="Webnc.js"></script>
   <script>if (questionsData) { allSubjectsData.Webnc = [...questionsData]; }</script>
-  
+
   <script src="Hoa.js"></script>
   <script>if (questionsData) { allSubjectsData.Hoa = [...questionsData]; }</script>
-  
+
   <script src="Duoc.js"></script>
   <script>if (questionsData) { allSubjectsData.Duoc = [...questionsData]; }</script>
-  
+
   <script src="quiz-app.js"></script>
 </body>
+
 </html>

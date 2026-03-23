@@ -4,11 +4,12 @@
 
 // BIẾN TOÀN CỤC
 let currentSubject = null; // Môn học hiện tại
-let currentPart = null; // 0: all, 1-5: part index+1
+let currentPart = null; // 0: all, 1-n: part index+1
 let quizQuestions = [];
 let currentIndex = 0;
 let userAnswers = [];
 let isAnswered = false;
+const QUESTIONS_PER_PART = 50;
 // questionsData sẽ được gán từ allSubjectsData khi chọn môn
 
 // =====================
@@ -64,12 +65,12 @@ function initQuizApp() {
     });
   }
 
-  // Gắn sự kiện cho các nút menu
-  document.querySelectorAll(".menu-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const part = btn.getAttribute("data-part");
-      startQuiz(part);
-    });
+  // Gắn sự kiện cho các nút menu (event delegation)
+  mainMenu.addEventListener("click", (event) => {
+    const button = event.target.closest(".menu-btn");
+    if (!button) return;
+    const part = button.getAttribute("data-part");
+    startQuiz(part);
   });
 
   // Gắn sự kiện cho các nút điều hướng
@@ -102,25 +103,49 @@ function selectSubject(subject) {
   };
   
   currentSubjectTitle.textContent = `Môn: ${subjectNames[subject]}`;
+  updatePartMenuButtons();
   
   // Ẩn menu môn học, hiện menu phần
   subjectMenu.classList.add("hidden");
   mainMenu.classList.remove("hidden");
 }
 
+function buildQuestionParts() {
+  const parts = [];
+  for (let start = 0; start < questionsData.length; start += QUESTIONS_PER_PART) {
+    parts.push(questionsData.slice(start, start + QUESTIONS_PER_PART));
+  }
+  return parts;
+}
+
+function updatePartMenuButtons() {
+  const oldButtons = mainMenu.querySelectorAll(".menu-btn");
+  oldButtons.forEach((button) => button.remove());
+
+  const allButton = document.createElement("button");
+  allButton.className = "menu-btn";
+  allButton.setAttribute("data-part", "all");
+  allButton.textContent = `Tất Cả (${questionsData.length} câu)`;
+  mainMenu.appendChild(allButton);
+
+  const partCount = Math.ceil(questionsData.length / QUESTIONS_PER_PART);
+  for (let index = 0; index < partCount; index++) {
+    const start = index * QUESTIONS_PER_PART + 1;
+    const end = Math.min((index + 1) * QUESTIONS_PER_PART, questionsData.length);
+
+    const partButton = document.createElement("button");
+    partButton.className = "menu-btn";
+    partButton.setAttribute("data-part", String(index + 1));
+    partButton.textContent = `Phần ${index + 1} (Câu ${start}-${end})`;
+    mainMenu.appendChild(partButton);
+  }
+}
+
 // =====================
 // KHỞI ĐỘNG QUIZ
 // =====================
 function startQuiz(part) {
-  // Chia câu hỏi thành các phần
-  const questions = [
-    questionsData.slice(0, 50),   // Phần 1: Câu 1-50
-    questionsData.slice(50, 100),  // Phần 2: Câu 51-100
-    questionsData.slice(100, 150), // Phần 3: Câu 101-150
-    questionsData.slice(150, 200), // Phần 4: Câu 151-200
-    questionsData.slice(200, 250), // Phần 5: Câu 201-250
-    questionsData.slice(250, 300), // Phần 6: Câu 251-300
-  ];
+  const questions = buildQuestionParts();
 
   let selectedQuestions;
   if (part === "all") {
@@ -456,14 +481,7 @@ function resetQuizState() {
 // BẮT ĐẦU LẠI QUIZ
 // =====================
 function restartQuiz() {
-  // Chia câu hỏi thành các phần
-  const questions = [
-    questionsData.slice(0, 50),
-    questionsData.slice(50, 100),
-    questionsData.slice(100, 150),
-    questionsData.slice(150, 200),
-    questionsData.slice(200, 250),
-  ];
+  const questions = buildQuestionParts();
 
   let selectedQuestions;
   if (currentPart === 0) {
