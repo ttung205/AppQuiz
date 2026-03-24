@@ -3618,6 +3618,14 @@ A có thể tự mình ký hợp đồng để bán ngôi nhà.
 A không thể tự mình ký hợp đồng để bán ngôi nhà mà phải được người đại diện theo pháp luật đồng ý.
 `;
 
+var additionalAnswerIndexes = [
+    2,1,1,1,2,0,1,1,0,0,2,1,2,2,0,0,3,0,2,3,1,0,2,2,3,1,2,1,2,1,3,2,0,0,0,3,1,2,3,1,
+    2,0,1,2,0,1,2,1,2,0,3,0,3,3,1,1,0,2,2,1,3,0,3,3,1,0,0,0,0,0,1,3,3,0,3,1,0,1,3,3,
+    2,0,2,3,0,0,0,3,2,0,3,1,1,3,3,2,2,2,3,1,1,2,2,1,0,2,1,1,1,0,1,0,2,3,2,1,2,0,1,1,
+    3,2,0,2,2,3,2,2,0,3,0,0,1,2,3,3,3,3,0,2,0,2,0,0,3,3,3,2,1,3,1,2,1,2,3,3,0,3,1,1,
+    1,2,0,0,3,2,2,0,2,1,0,3,3,2,1,2,1,1,3
+];
+
 function parseAdditionalRawQuizText(rawText) {
     const lines = rawText
         .split("\n")
@@ -3645,10 +3653,11 @@ function parseAdditionalRawQuizText(rawText) {
         }
 
         if (options.length === 4) {
+            const answerIndex = additionalAnswerIndexes[number - 1];
             parsed.push({
                 question: `Câu ${number}: ${title}`,
                 options,
-                answer: options[0],
+                answer: (answerIndex >= 0 && answerIndex < options.length) ? options[answerIndex] : options[0],
                 chapter: 5
             });
         }

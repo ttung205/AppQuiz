@@ -522,23 +522,48 @@ function shuffleArray(array) {
 function shuffleQuestionOptions(question) {
   const optionObjs = question.options.map((opt, idx) => ({ opt, idx }));
   shuffleArray(optionObjs);
-  const newOptions = optionObjs.map((o) => o.opt);
+  const sourceOptions = Array.isArray(question.options) ? question.options : [];
 
-  // Xử lý cả single và multiple answers
+  const normalizeToSourceIndex = (value) => {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+      const trimmedValue = value.trim();
+      return sourceOptions.findIndex((opt) => String(opt).trim() === trimmedValue);
+    }
+    return -1;
+  };
+
+  const rawCorrect = question.correct !== undefined ? question.correct : question.answer;
+  const normalizedCorrect = Array.isArray(rawCorrect)
+    ? rawCorrect.map(normalizeToSourceIndex).filter((idx) => idx >= 0)
+    : normalizeToSourceIndex(rawCorrect);
+
+  let isMultiple = Array.isArray(normalizedCorrect);
   let newAnswer;
-  if (Array.isArray(question.correct)) {
-    newAnswer = question.correct.map((correctIdx) =>
-      optionObjs.findIndex((o) => o.idx === correctIdx)
-    );
+
+  if (isMultiple) {
+    newAnswer = normalizedCorrect
+      .map((correctIdx) => optionObjs.findIndex((o) => o.idx === correctIdx))
+      .filter((idx) => idx >= 0);
+
+    if (newAnswer.length === 0) {
+      isMultiple = false;
+      newAnswer = 0;
+    }
   } else {
-    newAnswer = optionObjs.findIndex((o) => o.idx === question.correct);
+    newAnswer = optionObjs.findIndex((o) => o.idx === normalizedCorrect);
+    if (newAnswer < 0) {
+      newAnswer = 0;
+    }
   }
+
+  const newOptions = optionObjs.map((o) => o.opt);
 
   return {
     ...question,
     options: newOptions,
     answer: newAnswer,
-    isMultiple: Array.isArray(question.correct),
+    isMultiple,
   };
 }
 
