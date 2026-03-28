@@ -10,7 +10,18 @@ let currentIndex = 0;
 let userAnswers = [];
 let isAnswered = false;
 const QUESTIONS_PER_PART = 50;
+const QUIZ_STATE_KEY = "appquiz_state_v1";
 // questionsData sẽ được gán từ allSubjectsData khi chọn môn
+
+const SUBJECT_NAMES = {
+  DTDM: "Điện toán đám mây",
+  ATTT: "An toàn thông tin",
+  KTPM: "Kiểm thử phần mềm",
+  PLDC: "Phát triển ứng dụng",
+  Webnc: "Web nâng cao",
+  Hoa: "Hóa học",
+  Duoc: "Dược học",
+};
 
 // =====================
 // DOM ELEMENTS
@@ -31,6 +42,116 @@ const backToMenuBtn = document.getElementById("quiz-back-btn");
 const restartBtn = document.getElementById("restart-btn");
 const backToSubjectBtn = document.getElementById("back-to-subject");
 const currentSubjectTitle = document.getElementById("current-subject-title");
+
+function updateSubjectTitle(subject) {
+  currentSubjectTitle.textContent = `Môn: ${SUBJECT_NAMES[subject] || subject}`;
+}
+
+function getCurrentView() {
+  if (!quizView.classList.contains("hidden")) return "quiz";
+  if (!resultView.classList.contains("hidden")) return "result";
+  if (!mainMenu.classList.contains("hidden")) return "menu";
+  return "subject";
+}
+
+function saveQuizState() {
+  try {
+    if (!currentSubject || !Array.isArray(quizQuestions) || quizQuestions.length === 0) {
+      return;
+    }
+
+    const state = {
+      currentSubject,
+      currentPart,
+      quizQuestions,
+      currentIndex,
+      userAnswers,
+      isAnswered,
+      view: getCurrentView(),
+    };
+
+    localStorage.setItem(QUIZ_STATE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.warn("Không thể lưu trạng thái quiz:", error);
+  }
+}
+
+function clearPersistedQuizState() {
+  try {
+    localStorage.removeItem(QUIZ_STATE_KEY);
+  } catch (error) {
+    console.warn("Không thể xóa trạng thái quiz:", error);
+  }
+}
+
+function restoreQuizState() {
+  try {
+    const rawState = localStorage.getItem(QUIZ_STATE_KEY);
+    if (!rawState) return false;
+
+    const state = JSON.parse(rawState);
+    if (!state || !state.currentSubject || !allSubjectsData[state.currentSubject]) {
+      clearPersistedQuizState();
+      return false;
+    }
+
+    if (!Array.isArray(state.quizQuestions) || !Array.isArray(state.userAnswers)) {
+      clearPersistedQuizState();
+      return false;
+    }
+
+    currentSubject = state.currentSubject;
+    questionsData = allSubjectsData[currentSubject] || [];
+    currentPart = typeof state.currentPart === "number" ? state.currentPart : 0;
+    quizQuestions = state.quizQuestions;
+    userAnswers = state.userAnswers;
+    isAnswered = Boolean(state.isAnswered);
+
+    if (quizQuestions.length === 0) {
+      clearPersistedQuizState();
+      return false;
+    }
+
+    // Đồng bộ lại độ dài mảng đáp án nếu dữ liệu cũ bị lệch
+    if (userAnswers.length !== quizQuestions.length) {
+      const fixedAnswers = Array(quizQuestions.length).fill(null);
+      for (let i = 0; i < Math.min(userAnswers.length, fixedAnswers.length); i++) {
+        fixedAnswers[i] = userAnswers[i];
+      }
+      userAnswers = fixedAnswers;
+    }
+
+    currentIndex = Number.isInteger(state.currentIndex) ? state.currentIndex : 0;
+    if (currentIndex < 0) currentIndex = 0;
+    if (currentIndex >= quizQuestions.length) currentIndex = quizQuestions.length - 1;
+
+    updateSubjectTitle(currentSubject);
+    updatePartMenuButtons();
+    subjectMenu.classList.add("hidden");
+
+    if (state.view === "result") {
+      mainMenu.classList.add("hidden");
+      quizView.classList.add("hidden");
+      resultView.classList.remove("hidden");
+      showResult();
+    } else if (state.view === "menu") {
+      quizView.classList.add("hidden");
+      resultView.classList.add("hidden");
+      mainMenu.classList.remove("hidden");
+    } else {
+      mainMenu.classList.add("hidden");
+      resultView.classList.add("hidden");
+      quizView.classList.remove("hidden");
+      renderQuiz();
+    }
+
+    return true;
+  } catch (error) {
+    console.warn("Không thể khôi phục trạng thái quiz:", error);
+    clearPersistedQuizState();
+    return false;
+  }
+}
 
 // =====================
 // KHỞI TẠO APP
@@ -62,6 +183,7 @@ function initQuizApp() {
     backToSubjectBtn.addEventListener("click", () => {
       mainMenu.classList.add("hidden");
       subjectMenu.classList.remove("hidden");
+      clearPersistedQuizState();
     });
   }
 
@@ -75,6 +197,9 @@ function initQuizApp() {
 
   // Gắn sự kiện cho các nút điều hướng
   setupNavigationButtons();
+
+  // Khôi phục tiến trình đang làm quiz nếu có
+  restoreQuizState();
   
   console.log('✅ Quiz App initialized successfully!');
 }
@@ -92,22 +217,13 @@ function selectSubject(subject) {
   }
 
   // Cập nhật tiêu đề
-  const subjectNames = {
-    'DTDM': 'Điện toán đám mây',
-    'ATTT': 'An toàn thông tin',
-    'KTPM': 'Kiểm thử phần mềm',
-    'PLDC': 'Phát triển ứng dụng',
-    'Webnc': 'Web nâng cao',
-    'Hoa': 'Hóa học',
-    'Duoc': 'Dược học'
-  };
-  
-  currentSubjectTitle.textContent = `Môn: ${subjectNames[subject]}`;
+  updateSubjectTitle(subject);
   updatePartMenuButtons();
   
   // Ẩn menu môn học, hiện menu phần
   subjectMenu.classList.add("hidden");
   mainMenu.classList.remove("hidden");
+  saveQuizState();
 }
 
 function buildQuestionParts() {
@@ -179,10 +295,12 @@ function startQuiz(part) {
     quizProgress.textContent = "";
     prevBtn.disabled = true;
     nextBtn.disabled = true;
+    saveQuizState();
     return;
   }
   
   renderQuiz();
+  saveQuizState();
 }
 
 // =====================
@@ -251,6 +369,8 @@ function renderQuiz() {
   if (q.isMultiple && userAnswers[currentIndex] === null) {
     addConfirmButton();
   }
+
+  saveQuizState();
 }
 
 // =====================
@@ -285,6 +405,8 @@ function handleOptionClick(selectedIdx) {
     } else {
       nextBtn.disabled = currentAnswers.length === 0;
     }
+
+    saveQuizState();
   } else {
     // Xử lý single choice
     if (userAnswers[currentIndex] !== null) return;
@@ -406,6 +528,8 @@ function showResult() {
     <div><b>Phần trăm đúng:</b> ${percent}%</div>
     <div><b>Đánh giá:</b> ${rank}</div>
   `;
+
+  saveQuizState();
 }
 
 // =====================
@@ -435,6 +559,7 @@ function setupNavigationButtons() {
   backBtn.addEventListener("click", () => {
     resultView.classList.add("hidden");
     mainMenu.classList.remove("hidden");
+    clearPersistedQuizState();
   });
 
   // Nút quay lại từ quiz view
@@ -443,6 +568,7 @@ function setupNavigationButtons() {
       quizView.classList.add("hidden");
       mainMenu.classList.remove("hidden");
       resetQuizState();
+      clearPersistedQuizState();
     });
   }
 
@@ -475,6 +601,7 @@ function resetQuizState() {
   quizProgress.textContent = "";
   prevBtn.disabled = true;
   nextBtn.disabled = true;
+  clearPersistedQuizState();
 }
 
 // =====================
@@ -503,6 +630,7 @@ function restartQuiz() {
   
   // Hiển thị lại quiz từ đầu
   renderQuiz();
+  saveQuizState();
 }
 
 // =====================
