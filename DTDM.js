@@ -855,7 +855,7 @@ var questionsData = [
       "AWS Well-Architected Framework được tổ chức thành bao nhiêu trụ cột?",
     note: "Lưu ý: Tài liệu cũ ghi là 5, nhưng hiện tại AWS đã cập nhật chính thức lên 6 trụ cột (bao gồm Sustainability).",
     options: ["3", "4", "5", "6"],
-    correct: 2,
+    correct: 3,
   },
   {
     question:
