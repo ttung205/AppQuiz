@@ -11,6 +11,10 @@ let userAnswers = [];
 let isAnswered = false;
 const QUESTIONS_PER_PART = 50;
 const QUIZ_STATE_KEY = "appquiz_state_v1";
+const AUTO_NEXT_CORRECT_MS = 1500;
+let autoNextTimeoutId = null;
+let autoNextIntervalId = null;
+let autoNextStartedAt = 0;
 // questionsData sẽ được gán từ allSubjectsData khi chọn môn
 
 const SUBJECT_NAMES = {
@@ -36,6 +40,9 @@ const prevBtn = document.getElementById("prev-btn");
 const nextBtn = document.getElementById("next-btn");
 const quizPart = document.getElementById("quiz-part");
 const quizProgress = document.getElementById("quiz-progress");
+const answerFeedback = document.getElementById("answer-feedback");
+const autoNextTimer = document.getElementById("auto-next-timer");
+const autoNextBar = document.getElementById("auto-next-bar");
 const resultSummary = document.getElementById("result-summary");
 const backBtn = document.getElementById("back-btn");
 const backToMenuBtn = document.getElementById("quiz-back-btn");
@@ -52,6 +59,100 @@ function getCurrentView() {
   if (!resultView.classList.contains("hidden")) return "result";
   if (!mainMenu.classList.contains("hidden")) return "menu";
   return "subject";
+}
+
+function clearAutoNextTimer() {
+  if (autoNextTimeoutId !== null) {
+    clearTimeout(autoNextTimeoutId);
+    autoNextTimeoutId = null;
+  }
+
+  if (autoNextIntervalId !== null) {
+    clearInterval(autoNextIntervalId);
+    autoNextIntervalId = null;
+  }
+
+  autoNextStartedAt = 0;
+
+  if (autoNextTimer) {
+    autoNextTimer.classList.add("hidden");
+    autoNextTimer.classList.remove("correct-timer", "incorrect-timer");
+  }
+
+  if (autoNextBar) {
+    autoNextBar.style.width = "0%";
+  }
+
+}
+
+function isCurrentAnswerCorrect() {
+  const q = quizQuestions[currentIndex];
+  const userAnswer = userAnswers[currentIndex];
+  if (!q || userAnswer === null || userAnswer === undefined) return false;
+
+  if (q.isMultiple) {
+    if (!Array.isArray(userAnswer) || !Array.isArray(q.answer)) return false;
+    const sortedUser = [...userAnswer].sort((a, b) => a - b);
+    const sortedCorrect = [...q.answer].sort((a, b) => a - b);
+    return (
+      sortedUser.length === sortedCorrect.length &&
+      sortedUser.every((val, i) => val === sortedCorrect[i])
+    );
+  }
+
+  return userAnswer === q.answer;
+}
+
+function goToNextQuestionOrResult() {
+  clearAutoNextTimer();
+  if (currentIndex < quizQuestions.length - 1) {
+    currentIndex++;
+    renderQuiz();
+  } else {
+    showResult();
+  }
+}
+
+function startAutoNextCountdown() {
+  clearAutoNextTimer();
+
+  const duration = AUTO_NEXT_CORRECT_MS;
+  answerFeedback.textContent = "";
+  answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
+
+  autoNextTimer.classList.remove("hidden");
+  autoNextTimer.classList.add("correct-timer");
+  autoNextTimer.classList.remove("incorrect-timer");
+  autoNextBar.style.width = "0%";
+
+  autoNextStartedAt = Date.now();
+  autoNextIntervalId = setInterval(() => {
+    const elapsed = Date.now() - autoNextStartedAt;
+    const progress = Math.min((elapsed / duration) * 100, 100);
+    autoNextBar.style.width = `${progress}%`;
+  }, 80);
+
+  autoNextTimeoutId = setTimeout(() => {
+    goToNextQuestionOrResult();
+  }, duration);
+}
+
+function finalizeAnswerAndScheduleNext() {
+  setTimeout(() => {
+    showAnswerResult();
+    renderQuiz();
+    const isCorrect = isCurrentAnswerCorrect();
+
+    if (isCorrect) {
+      startAutoNextCountdown();
+    } else {
+      clearAutoNextTimer();
+      answerFeedback.textContent = "";
+      answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
+    }
+
+    saveQuizState();
+  }, 500);
 }
 
 function saveQuizState() {
@@ -261,6 +362,7 @@ function updatePartMenuButtons() {
 // KHỞI ĐỘNG QUIZ
 // =====================
 function startQuiz(part) {
+  clearAutoNextTimer();
   const questions = buildQuestionParts();
 
   let selectedQuestions;
@@ -307,6 +409,7 @@ function startQuiz(part) {
 // HIỂN THỊ CÂU HỎI
 // =====================
 function renderQuiz() {
+  clearAutoNextTimer();
   if (quizQuestions.length === 0) {
     questionContent.textContent = "Chưa có câu hỏi cho phần này.";
     optionsList.innerHTML = "";
@@ -318,6 +421,8 @@ function renderQuiz() {
   }
   
   const q = quizQuestions[currentIndex];
+  answerFeedback.textContent = "";
+  answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
   quizPart.textContent = currentPart === 0 ? "Tất Cả" : `Phần ${currentPart}`;
   quizProgress.textContent = `Câu ${currentIndex + 1} / ${quizQuestions.length}`;
 
@@ -414,11 +519,8 @@ function handleOptionClick(selectedIdx) {
     userAnswers[currentIndex] = selectedIdx;
     isAnswered = true;
 
-    // Hiển thị đúng/sai sau 0.5s
-    setTimeout(() => {
-      showAnswerResult();
-      renderQuiz();
-    }, 500);
+    // Hiển thị đúng/sai rồi tự chuyển câu
+    finalizeAnswerAndScheduleNext();
 
     // Ngăn chọn lại
     Array.from(optionsList.children).forEach((li) =>
@@ -439,10 +541,7 @@ function addConfirmButton() {
     confirmBtn.onclick = () => {
       if (userAnswers[currentIndex] && userAnswers[currentIndex].length > 0) {
         isAnswered = true;
-        setTimeout(() => {
-          showAnswerResult();
-          renderQuiz();
-        }, 500);
+        finalizeAnswerAndScheduleNext();
         Array.from(optionsList.children).forEach((li) =>
           li.classList.add("disabled")
         );
@@ -486,6 +585,7 @@ function showAnswerResult() {
 // HIỂN THỊ KẾT QUẢ
 // =====================
 function showResult() {
+  clearAutoNextTimer();
   quizView.classList.add("hidden");
   resultView.classList.remove("hidden");
   const total = quizQuestions.length;
@@ -538,6 +638,7 @@ function showResult() {
 function setupNavigationButtons() {
   // Nút câu trước
   prevBtn.addEventListener("click", () => {
+    clearAutoNextTimer();
     if (currentIndex > 0) {
       currentIndex--;
       nextBtn.textContent = "Câu Tiếp Theo";
@@ -547,16 +648,12 @@ function setupNavigationButtons() {
 
   // Nút câu tiếp theo
   nextBtn.addEventListener("click", () => {
-    if (currentIndex < quizQuestions.length - 1) {
-      currentIndex++;
-      renderQuiz();
-    } else if (currentIndex === quizQuestions.length - 1) {
-      showResult();
-    }
+    goToNextQuestionOrResult();
   });
 
   // Nút quay lại từ kết quả
   backBtn.addEventListener("click", () => {
+    clearAutoNextTimer();
     resultView.classList.add("hidden");
     mainMenu.classList.remove("hidden");
     clearPersistedQuizState();
@@ -565,6 +662,7 @@ function setupNavigationButtons() {
   // Nút quay lại từ quiz view
   if (backToMenuBtn) {
     backToMenuBtn.addEventListener("click", () => {
+      clearAutoNextTimer();
       quizView.classList.add("hidden");
       mainMenu.classList.remove("hidden");
       resetQuizState();
@@ -591,6 +689,7 @@ function setupNavigationButtons() {
 // RESET TRẠNG THÁI QUIZ
 // =====================
 function resetQuizState() {
+  clearAutoNextTimer();
   quizQuestions = [];
   currentIndex = 0;
   userAnswers = [];
@@ -599,6 +698,8 @@ function resetQuizState() {
   optionsList.innerHTML = "";
   quizPart.textContent = "";
   quizProgress.textContent = "";
+  answerFeedback.textContent = "";
+  answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
   prevBtn.disabled = true;
   nextBtn.disabled = true;
   clearPersistedQuizState();

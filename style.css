@@ -369,6 +369,34 @@ body::before {
   font-weight: 500;
 }
 
+.auto-next-timer {
+  margin-top: 0;
+  margin-bottom: 14px;
+}
+
+.auto-next-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #dce7ef;
+  overflow: hidden;
+}
+
+.auto-next-bar {
+  width: 0%;
+  height: 100%;
+  background: var(--btn-next);
+  transition: width 0.08s linear;
+}
+
+.auto-next-timer.correct-timer .auto-next-bar {
+  background: var(--success);
+}
+
+.auto-next-timer.incorrect-timer .auto-next-bar {
+  background: var(--danger);
+}
+
 .answer-feedback.correct-feedback {
   color: var(--success);
 }
