@@ -969,7 +969,7 @@ var questionsData = [
       "Amazon CloudTrail",
       "Amazon EC2 Scaling",
     ],
-    correct: 3,
+    correct: 2,
   },
   {
     question:
