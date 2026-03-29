@@ -15,6 +15,10 @@ const AUTO_NEXT_CORRECT_MS = 1000;
 let autoNextTimeoutId = null;
 let autoNextIntervalId = null;
 let autoNextStartedAt = 0;
+let confirmedAnswers = [];
+let visitedQuestions = [];
+let pendingSelections = [];
+let currentMapFilter = "all";
 // questionsData sẽ được gán từ allSubjectsData khi chọn môn
 
 const SUBJECT_NAMES = {
@@ -32,6 +36,8 @@ const SUBJECT_NAMES = {
 // =====================
 const subjectMenu = document.getElementById("subject-menu");
 const mainMenu = document.getElementById("main-menu");
+const questionPanelContainer = document.getElementById("question-panel-container");
+const questionPanel = document.getElementById("question-panel");
 const quizView = document.getElementById("quiz-view");
 const resultView = document.getElementById("result-view");
 const questionContent = document.getElementById("question-content");
@@ -43,8 +49,12 @@ const quizProgress = document.getElementById("quiz-progress");
 const answerFeedback = document.getElementById("answer-feedback");
 const autoNextTimer = document.getElementById("auto-next-timer");
 const autoNextBar = document.getElementById("auto-next-bar");
+const questionFilters = document.getElementById("question-filters");
+const currentScoreBadge = document.getElementById("current-score-badge");
+const questionMap = document.getElementById("question-map");
 const resultSummary = document.getElementById("result-summary");
 const backBtn = document.getElementById("back-btn");
+const resultBackMenuBtn = document.getElementById("result-back-menu-btn");
 const backToMenuBtn = document.getElementById("quiz-back-btn");
 const restartBtn = document.getElementById("restart-btn");
 const backToSubjectBtn = document.getElementById("back-to-subject");
@@ -59,6 +69,106 @@ function getCurrentView() {
   if (!resultView.classList.contains("hidden")) return "result";
   if (!mainMenu.classList.contains("hidden")) return "menu";
   return "subject";
+}
+
+function updateQuestionPanelVisibility() {
+  if (questionPanelContainer) {
+    const showPanelContainer = !quizView.classList.contains("hidden");
+    questionPanelContainer.classList.toggle("hidden", !showPanelContainer);
+  }
+
+  if (!questionPanel) return;
+  const showPanel = !quizView.classList.contains("hidden");
+  questionPanel.classList.toggle("hidden", !showPanel);
+}
+
+function initQuestionTracking(total) {
+  confirmedAnswers = Array(total).fill(false);
+  visitedQuestions = Array(total).fill(false);
+  pendingSelections = Array.from({ length: total }, () => []);
+  currentMapFilter = "all";
+}
+
+function isAnswerCorrectAt(index) {
+  const q = quizQuestions[index];
+  const userAnswer = userAnswers[index];
+  if (!q || !confirmedAnswers[index]) return false;
+
+  if (q.isMultiple) {
+    if (!Array.isArray(userAnswer) || !Array.isArray(q.answer)) return false;
+    const sortedUser = [...userAnswer].sort((a, b) => a - b);
+    const sortedCorrect = [...q.answer].sort((a, b) => a - b);
+    return (
+      sortedUser.length === sortedCorrect.length &&
+      sortedUser.every((val, i) => val === sortedCorrect[i])
+    );
+  }
+
+  return userAnswer === q.answer;
+}
+
+function calculateCurrentCorrectCount() {
+  let correct = 0;
+  for (let i = 0; i < quizQuestions.length; i++) {
+    if (confirmedAnswers[i] && isAnswerCorrectAt(i)) {
+      correct++;
+    }
+  }
+  return correct;
+}
+
+function updateCurrentScoreBadge() {
+  if (!currentScoreBadge) return;
+  const total = quizQuestions.length;
+  const correct = calculateCurrentCorrectCount();
+  currentScoreBadge.textContent = `${correct}/${total}`;
+}
+
+function getQuestionStatus(index) {
+  if (confirmedAnswers[index] && !isAnswerCorrectAt(index)) return "wrong";
+  if (confirmedAnswers[index]) return "done";
+  return "unanswered";
+}
+
+function shouldShowByFilter(index) {
+  if (currentMapFilter === "all") return true;
+  if (currentMapFilter === "wrong") return confirmedAnswers[index] && !isAnswerCorrectAt(index);
+  return true;
+}
+
+function renderQuestionMap() {
+  if (!questionMap) return;
+  questionMap.innerHTML = "";
+
+  for (let i = 0; i < quizQuestions.length; i++) {
+    if (!shouldShowByFilter(i)) continue;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "question-map-item";
+    btn.textContent = String(i + 1);
+
+    const status = getQuestionStatus(i);
+    btn.classList.add(`status-${status}`);
+    if (i === currentIndex) btn.classList.add("current");
+
+    btn.addEventListener("click", () => {
+      clearAutoNextTimer();
+      currentIndex = i;
+      renderQuiz();
+    });
+
+    questionMap.appendChild(btn);
+  }
+}
+
+function applyFilterButtonState() {
+  if (!questionFilters) return;
+  const buttons = questionFilters.querySelectorAll(".question-filter-btn");
+  buttons.forEach((btn) => {
+    const filter = btn.getAttribute("data-filter");
+    btn.classList.toggle("active", filter === currentMapFilter);
+  });
 }
 
 function clearAutoNextTimer() {
@@ -86,21 +196,7 @@ function clearAutoNextTimer() {
 }
 
 function isCurrentAnswerCorrect() {
-  const q = quizQuestions[currentIndex];
-  const userAnswer = userAnswers[currentIndex];
-  if (!q || userAnswer === null || userAnswer === undefined) return false;
-
-  if (q.isMultiple) {
-    if (!Array.isArray(userAnswer) || !Array.isArray(q.answer)) return false;
-    const sortedUser = [...userAnswer].sort((a, b) => a - b);
-    const sortedCorrect = [...q.answer].sort((a, b) => a - b);
-    return (
-      sortedUser.length === sortedCorrect.length &&
-      sortedUser.every((val, i) => val === sortedCorrect[i])
-    );
-  }
-
-  return userAnswer === q.answer;
+  return isAnswerCorrectAt(currentIndex);
 }
 
 function goToNextQuestionOrResult() {
@@ -167,6 +263,10 @@ function saveQuizState() {
       quizQuestions,
       currentIndex,
       userAnswers,
+      confirmedAnswers,
+      visitedQuestions,
+      pendingSelections,
+      currentMapFilter,
       isAnswered,
       view: getCurrentView(),
     };
@@ -206,6 +306,20 @@ function restoreQuizState() {
     currentPart = typeof state.currentPart === "number" ? state.currentPart : 0;
     quizQuestions = state.quizQuestions;
     userAnswers = state.userAnswers;
+    confirmedAnswers = Array.isArray(state.confirmedAnswers)
+      ? state.confirmedAnswers.map((v) => Boolean(v))
+      : userAnswers.map((ans) => ans !== null);
+    visitedQuestions = Array.isArray(state.visitedQuestions)
+      ? state.visitedQuestions.map((v) => Boolean(v))
+      : Array(quizQuestions.length).fill(false);
+    pendingSelections = Array.isArray(state.pendingSelections)
+      ? state.pendingSelections.map((arr) => (Array.isArray(arr) ? [...arr] : []))
+      : Array.from({ length: quizQuestions.length }, () => []);
+    const allowedFilters = ["all", "wrong"];
+    currentMapFilter =
+      typeof state.currentMapFilter === "string" && allowedFilters.includes(state.currentMapFilter)
+        ? state.currentMapFilter
+        : "all";
     isAnswered = Boolean(state.isAnswered);
 
     if (quizQuestions.length === 0) {
@@ -222,6 +336,26 @@ function restoreQuizState() {
       userAnswers = fixedAnswers;
     }
 
+    if (confirmedAnswers.length !== quizQuestions.length) {
+      const fixedConfirmed = Array(quizQuestions.length).fill(false);
+      for (let i = 0; i < Math.min(confirmedAnswers.length, fixedConfirmed.length); i++) {
+        fixedConfirmed[i] = Boolean(confirmedAnswers[i]);
+      }
+      confirmedAnswers = fixedConfirmed;
+    }
+
+    if (visitedQuestions.length !== quizQuestions.length) {
+      const fixedVisited = Array(quizQuestions.length).fill(false);
+      for (let i = 0; i < Math.min(visitedQuestions.length, fixedVisited.length); i++) {
+        fixedVisited[i] = Boolean(visitedQuestions[i]);
+      }
+      visitedQuestions = fixedVisited;
+    }
+
+    if (pendingSelections.length !== quizQuestions.length) {
+      pendingSelections = Array.from({ length: quizQuestions.length }, () => []);
+    }
+
     currentIndex = Number.isInteger(state.currentIndex) ? state.currentIndex : 0;
     if (currentIndex < 0) currentIndex = 0;
     if (currentIndex >= quizQuestions.length) currentIndex = quizQuestions.length - 1;
@@ -234,15 +368,18 @@ function restoreQuizState() {
       mainMenu.classList.add("hidden");
       quizView.classList.add("hidden");
       resultView.classList.remove("hidden");
+      updateQuestionPanelVisibility();
       showResult();
     } else if (state.view === "menu") {
       quizView.classList.add("hidden");
       resultView.classList.add("hidden");
       mainMenu.classList.remove("hidden");
+      updateQuestionPanelVisibility();
     } else {
       mainMenu.classList.add("hidden");
       resultView.classList.add("hidden");
       quizView.classList.remove("hidden");
+      updateQuestionPanelVisibility();
       renderQuiz();
     }
 
@@ -284,6 +421,7 @@ function initQuizApp() {
     backToSubjectBtn.addEventListener("click", () => {
       mainMenu.classList.add("hidden");
       subjectMenu.classList.remove("hidden");
+      updateQuestionPanelVisibility();
       clearPersistedQuizState();
     });
   }
@@ -298,6 +436,17 @@ function initQuizApp() {
 
   // Gắn sự kiện cho các nút điều hướng
   setupNavigationButtons();
+
+  if (questionFilters) {
+    questionFilters.addEventListener("click", (event) => {
+      const btn = event.target.closest(".question-filter-btn");
+      if (!btn) return;
+      currentMapFilter = btn.getAttribute("data-filter") || "all";
+      applyFilterButtonState();
+      renderQuestionMap();
+      saveQuizState();
+    });
+  }
 
   // Khôi phục tiến trình đang làm quiz nếu có
   restoreQuizState();
@@ -324,6 +473,7 @@ function selectSubject(subject) {
   // Ẩn menu môn học, hiện menu phần
   subjectMenu.classList.add("hidden");
   mainMenu.classList.remove("hidden");
+  updateQuestionPanelVisibility();
   saveQuizState();
 }
 
@@ -382,12 +532,14 @@ function startQuiz(part) {
   quizQuestions = selectedQuestions.map((q) => shuffleQuestionOptions(q));
   currentIndex = 0;
   userAnswers = Array(quizQuestions.length).fill(null);
+  initQuestionTracking(quizQuestions.length);
   isAnswered = false;
   
   // Ẩn menu, hiện quiz
   mainMenu.classList.add("hidden");
   resultView.classList.add("hidden");
   quizView.classList.remove("hidden");
+  updateQuestionPanelVisibility();
   
   // Nếu không có câu hỏi thì báo luôn
   if (quizQuestions.length === 0) {
@@ -421,6 +573,7 @@ function renderQuiz() {
   }
   
   const q = quizQuestions[currentIndex];
+  visitedQuestions[currentIndex] = true;
   answerFeedback.textContent = "";
   answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
   quizPart.textContent = currentPart === 0 ? "Tất Cả" : `Phần ${currentPart}`;
@@ -439,20 +592,23 @@ function renderQuiz() {
     li.textContent = opt;
     li.classList.add("option-item");
 
-    if (userAnswers[currentIndex] !== null) {
+    if (confirmedAnswers[currentIndex]) {
       li.classList.add("disabled");
 
       if (q.isMultiple) {
         if (q.answer.includes(i)) li.classList.add("correct");
-        if (userAnswers[currentIndex].includes(i) && !q.answer.includes(i))
+        if (Array.isArray(userAnswers[currentIndex]) && userAnswers[currentIndex].includes(i) && !q.answer.includes(i))
           li.classList.add("incorrect");
-        if (userAnswers[currentIndex].includes(i)) li.classList.add("selected");
+        if (Array.isArray(userAnswers[currentIndex]) && userAnswers[currentIndex].includes(i)) li.classList.add("selected");
       } else {
         if (i === q.answer) li.classList.add("correct");
         if (i === userAnswers[currentIndex] && userAnswers[currentIndex] !== q.answer)
           li.classList.add("incorrect");
         if (i === userAnswers[currentIndex]) li.classList.add("selected");
       }
+    } else if (q.isMultiple) {
+      const pending = pendingSelections[currentIndex] || [];
+      if (pending.includes(i)) li.classList.add("selected");
     }
 
     li.addEventListener("click", () => handleOptionClick(i));
@@ -464,16 +620,20 @@ function renderQuiz() {
   // Logic nút Next
   if (currentIndex === quizQuestions.length - 1) {
     nextBtn.textContent = "Xem kết quả";
-    nextBtn.disabled = userAnswers[currentIndex] === null;
+    nextBtn.disabled = !confirmedAnswers[currentIndex];
   } else {
     nextBtn.textContent = "Câu Tiếp Theo";
-    nextBtn.disabled = userAnswers[currentIndex] === null;
+    nextBtn.disabled = !confirmedAnswers[currentIndex];
   }
 
   // Thêm nút xác nhận cho multiple choice nếu chưa trả lời
-  if (q.isMultiple && userAnswers[currentIndex] === null) {
+  if (q.isMultiple && !confirmedAnswers[currentIndex]) {
     addConfirmButton();
   }
+
+  applyFilterButtonState();
+  renderQuestionMap();
+  updateCurrentScoreBadge();
 
   saveQuizState();
 }
@@ -486,11 +646,13 @@ function handleOptionClick(selectedIdx) {
 
   if (q.isMultiple) {
     // Xử lý multiple choice
-    if (userAnswers[currentIndex] === null) {
-      userAnswers[currentIndex] = [];
+    if (confirmedAnswers[currentIndex]) return;
+
+    if (!Array.isArray(pendingSelections[currentIndex])) {
+      pendingSelections[currentIndex] = [];
     }
 
-    const currentAnswers = userAnswers[currentIndex];
+    const currentAnswers = pendingSelections[currentIndex];
     const optionElement = optionsList.children[selectedIdx];
 
     if (currentAnswers.includes(selectedIdx)) {
@@ -504,19 +666,13 @@ function handleOptionClick(selectedIdx) {
       optionElement.classList.add("selected");
     }
 
-    // Enable nút Next nếu đã chọn ít nhất 1 đáp án
-    if (currentIndex === quizQuestions.length - 1) {
-      nextBtn.disabled = currentAnswers.length === 0;
-    } else {
-      nextBtn.disabled = currentAnswers.length === 0;
-    }
-
     saveQuizState();
   } else {
     // Xử lý single choice
-    if (userAnswers[currentIndex] !== null) return;
+    if (confirmedAnswers[currentIndex]) return;
 
     userAnswers[currentIndex] = selectedIdx;
+    confirmedAnswers[currentIndex] = true;
     isAnswered = true;
 
     // Hiển thị đúng/sai rồi tự chuyển câu
@@ -534,12 +690,17 @@ function handleOptionClick(selectedIdx) {
 // =====================
 function addConfirmButton() {
   const q = quizQuestions[currentIndex];
-  if (q.isMultiple && userAnswers[currentIndex] === null) {
+  if (q.isMultiple && !confirmedAnswers[currentIndex]) {
     const confirmBtn = document.createElement("button");
     confirmBtn.textContent = "Xác nhận đáp án";
     confirmBtn.classList.add("confirm-btn");
+    const pending = pendingSelections[currentIndex] || [];
+    confirmBtn.disabled = pending.length === 0;
     confirmBtn.onclick = () => {
-      if (userAnswers[currentIndex] && userAnswers[currentIndex].length > 0) {
+      const selected = pendingSelections[currentIndex] || [];
+      if (selected.length > 0) {
+        userAnswers[currentIndex] = [...selected].sort((a, b) => a - b);
+        confirmedAnswers[currentIndex] = true;
         isAnswered = true;
         finalizeAnswerAndScheduleNext();
         Array.from(optionsList.children).forEach((li) =>
@@ -588,6 +749,7 @@ function showResult() {
   clearAutoNextTimer();
   quizView.classList.add("hidden");
   resultView.classList.remove("hidden");
+  updateQuestionPanelVisibility();
   const total = quizQuestions.length;
 
   let correct = 0;
@@ -629,6 +791,10 @@ function showResult() {
     <div><b>Đánh giá:</b> ${rank}</div>
   `;
 
+  if (currentScoreBadge) {
+    currentScoreBadge.textContent = `${correct}/${total}`;
+  }
+
   saveQuizState();
 }
 
@@ -655,9 +821,23 @@ function setupNavigationButtons() {
   backBtn.addEventListener("click", () => {
     clearAutoNextTimer();
     resultView.classList.add("hidden");
-    mainMenu.classList.remove("hidden");
-    clearPersistedQuizState();
+    quizView.classList.remove("hidden");
+    currentIndex = 0;
+    currentMapFilter = "all";
+    updateQuestionPanelVisibility();
+    renderQuiz();
+    saveQuizState();
   });
+
+  if (resultBackMenuBtn) {
+    resultBackMenuBtn.addEventListener("click", () => {
+      clearAutoNextTimer();
+      resultView.classList.add("hidden");
+      mainMenu.classList.remove("hidden");
+      updateQuestionPanelVisibility();
+      clearPersistedQuizState();
+    });
+  }
 
   // Nút quay lại từ quiz view
   if (backToMenuBtn) {
@@ -665,6 +845,7 @@ function setupNavigationButtons() {
       clearAutoNextTimer();
       quizView.classList.add("hidden");
       mainMenu.classList.remove("hidden");
+      updateQuestionPanelVisibility();
       resetQuizState();
       clearPersistedQuizState();
     });
@@ -679,7 +860,7 @@ function setupNavigationButtons() {
 
   // Ngăn chọn lại đáp án
   optionsList.addEventListener("click", (e) => {
-    if (e.target.tagName === "LI" && userAnswers[currentIndex] !== null) {
+    if (e.target.tagName === "LI" && confirmedAnswers[currentIndex]) {
       e.preventDefault();
     }
   });
@@ -693,11 +874,19 @@ function resetQuizState() {
   quizQuestions = [];
   currentIndex = 0;
   userAnswers = [];
+  confirmedAnswers = [];
+  visitedQuestions = [];
+  pendingSelections = [];
+  currentMapFilter = "all";
   isAnswered = false;
   questionContent.textContent = "";
   optionsList.innerHTML = "";
   quizPart.textContent = "";
   quizProgress.textContent = "";
+  if (questionMap) questionMap.innerHTML = "";
+  applyFilterButtonState();
+  if (currentScoreBadge) currentScoreBadge.textContent = "0/0";
+  updateQuestionPanelVisibility();
   answerFeedback.textContent = "";
   answerFeedback.classList.remove("correct-feedback", "incorrect-feedback");
   prevBtn.disabled = true;
@@ -727,6 +916,7 @@ function restartQuiz() {
   quizQuestions = selectedQuestions.map((q) => shuffleQuestionOptions(q));
   currentIndex = 0;
   userAnswers = Array(quizQuestions.length).fill(null);
+  initQuestionTracking(quizQuestions.length);
   isAnswered = false;
   
   // Hiển thị lại quiz từ đầu
