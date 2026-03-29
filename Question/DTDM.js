@@ -46,7 +46,7 @@ var questionsData = [
     question:
       "Nhà cung cấp nào trong số những nhà cung cấp này được biết đến nhiều hơn với các dịch vụ SaaS của họ?",
     options: [
-      "Đội ngũ bán hàng",
+      "Salesforce",
       "Intel",
       "Dịch vụ trang web của Amazon",
       "Đám mây Alibaba",
