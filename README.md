@@ -12,7 +12,7 @@
 - Trộn thứ tự câu hỏi và đáp án để luyện tập hiệu quả hơn.
 - Hỗ trợ cả câu hỏi một đáp án và nhiều đáp án.
 - Hiển thị đúng/sai trực tiếp ngay sau khi trả lời.
-- Tự động chuyển câu sau 3 giây khi trả lời đúng (kèm thanh timer).
+- Tự động chuyển câu sau 1 giây khi trả lời đúng (kèm thanh timer).
 - Khi trả lời sai, giữ nguyên câu hiện tại để xem lại.
 - Lưu trạng thái làm bài bằng localStorage: reload trang vẫn tiếp tục được.
 - Xem kết quả cuối bài: số câu đúng, phần trăm và đánh giá.
