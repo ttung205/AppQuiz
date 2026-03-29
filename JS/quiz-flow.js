@@ -140,6 +140,8 @@ function startQuiz(part) {
 
 function renderQuiz() {
   clearAutoNextTimer();
+  removeConfirmButtons();
+
   if (quizQuestions.length === 0) {
     questionContent.textContent = "Chưa có câu hỏi cho phần này.";
     optionsList.innerHTML = "";
@@ -239,6 +241,8 @@ function handleOptionClick(selectedIdx) {
       optionElement.classList.add("selected");
     }
 
+    syncConfirmButtonState();
+
     saveQuizState();
   } else {
     if (confirmedAnswers[currentIndex]) return;
@@ -253,9 +257,23 @@ function handleOptionClick(selectedIdx) {
   }
 }
 
+function removeConfirmButtons() {
+  const existingButtons = document.querySelectorAll(".confirm-btn");
+  existingButtons.forEach((btn) => btn.remove());
+}
+
+function syncConfirmButtonState() {
+  const confirmBtn = document.querySelector(".confirm-btn");
+  if (!confirmBtn) return;
+  const pending = pendingSelections[currentIndex] || [];
+  confirmBtn.disabled = pending.length === 0;
+}
+
 function addConfirmButton() {
   const q = quizQuestions[currentIndex];
   if (q.isMultiple && !confirmedAnswers[currentIndex]) {
+    removeConfirmButtons();
+
     const confirmBtn = document.createElement("button");
     confirmBtn.textContent = "Xác nhận đáp án";
     confirmBtn.classList.add("confirm-btn");
