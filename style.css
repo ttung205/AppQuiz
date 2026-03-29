@@ -413,7 +413,7 @@ body::before {
 }
 
 #options-list li {
-  background: #f7faf8;
+  background: #ffffff;
   border: 2px solid #c9d9e6;
   color: var(--content-text);
   font-size: 0.98rem;
