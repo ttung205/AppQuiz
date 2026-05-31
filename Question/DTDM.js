@@ -1591,16 +1591,6 @@ var questionsData = [
     correct: [0, 1]
   },
   {
-    question: "Câu nào trong số những tuyên bố này đúng với mã hóa đám mây?",
-    options: [
-      "Chỉ A và C",
-      "A, B, C và D",
-      "Chỉ A, B và C",
-      "Chỉ A, B và D"
-    ],
-    correct: 2
-  },
-  {
     question: "Xác định một số thực tiễn tốt nhất về giám sát đám mây tiêu chuẩn từ các tùy chọn được cung cấp. Chọn hai.",
     options: [
       "Xác thực người dùng đang cố gắng truy cập tài nguyên đám mây của họ.",
@@ -1639,16 +1629,6 @@ var questionsData = [
       "Dịch vụ, Kiểm toán và Tuân thủ thư mục đám mây"
     ],
     correct: 3
-  },
-  {
-    question: "Câu nào trong số những tuyên bố này đúng với mã hóa đám mây?",
-    options: [
-      "Chỉ A, B và C",
-      "Chỉ A và C",
-      "Chỉ A, B và D",
-      "A, B, C và D"
-    ],
-    correct: 0
   },
   {
     question: "Xác định một số thực tiễn tốt nhất về giám sát đám mây tiêu chuẩn từ các tùy chọn được cung cấp.",
