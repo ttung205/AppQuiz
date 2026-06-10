@@ -23,6 +23,7 @@ const SUBJECT_NAMES = {
   DTDM: "Điện toán đám mây",
   ATTT: "An toàn thông tin",
   KTPM: "Kiểm thử phần mềm",
+  SoftwareArchitecture: "Kiến trúc phần mềm",
   PLDC: "Phát triển ứng dụng",
   Webnc: "Web nâng cao",
 };
